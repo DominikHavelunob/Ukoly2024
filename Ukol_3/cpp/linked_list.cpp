@@ -99,6 +99,11 @@ void deleteAtIndex(Node** head, int index) {
 }
 
 
+void deleteAtIndex(Node* head, int index) {
+    deleteAtIndex(&head, index);
+}
+
+
 
 int findFirstOccurrence(Node* head, int value) {
     int index = 0;
