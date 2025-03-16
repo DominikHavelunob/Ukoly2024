@@ -141,10 +141,13 @@ void deleteList(Node** head) {
     *head = nullptr;
 }
 
-std::ostream& operator<<(std::ostream& os, Node* head) {
-    Node* temp = head;
-    while (temp != nullptr) {
-        os << temp->data << " ";
+std::ostream& operator<<(std::ostream& os, const Node* head) {
+    const Node* temp = head;
+    while (temp) {
+        os << temp->data;
+        if (temp->next) {
+            os << " ";
+        }
         temp = temp->next;
     }
     return os;
