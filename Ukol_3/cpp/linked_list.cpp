@@ -73,20 +73,22 @@ void deleteAtEnd(Node** head) {
     temp->next = nullptr;
 }
 
-void deleteAtIndex(Node* head, int index) {
-    if (head == nullptr) return;
+void deleteAtIndex(Node** head, int index) {
+    if (*head == nullptr) return;
 
-    if (index == 0) {  
-        std::cerr << "Cannot delete head node with deleteAtIndex" << std::endl;
+    Node* temp = *head;
+
+    if (index == 0) {
+        *head = temp->next;
+        delete temp;
         return;
     }
 
-    Node* temp = head;
-    for (int i = 0; i < index - 1 && temp->next != nullptr; ++i) {
+    for (int i = 0; i < index - 1 && temp != nullptr; ++i) {
         temp = temp->next;
     }
 
-    if (temp->next == nullptr) {
+    if (temp == nullptr || temp->next == nullptr) {
         std::cerr << "Index mimo rozsah" << std::endl;
         return;
     }
@@ -95,6 +97,7 @@ void deleteAtIndex(Node* head, int index) {
     temp->next = temp->next->next;
     delete nodeToDelete;
 }
+
 
 
 int findFirstOccurrence(Node* head, int value) {
