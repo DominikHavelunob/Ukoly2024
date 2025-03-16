@@ -46,7 +46,8 @@ void zobrazVeze(vector<vector<int>> &veze) {
 
                 int disk = vez[i];
                 int padding = maxDisk - disk;
-                cout << " " << string(padding, '   ') << string(disk * 2 - 1, '=') << string(padding, '   ') << " ";
+                //cout << " " << string(padding, '   ') << string(disk * 2 - 1, '=') << string(padding, '   ') << " ";
+                cout << " " << string(padding, ' ') << string(disk * 2 - 1, '=') << string(padding, ' ') << " ";
 
             } else {
 
