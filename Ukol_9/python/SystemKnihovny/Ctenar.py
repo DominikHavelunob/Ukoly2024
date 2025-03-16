@@ -1,3 +1,4 @@
+#reuplaod
 import random
 
 class Ctenar:
