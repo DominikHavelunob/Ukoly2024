@@ -1,100 +1,83 @@
-#include <iostream>
-#include <vector>
+#include "gtest/gtest.h"
+#include "hanoi.cpp"
 
-using namespace std;
-
-// Struktura pro reprezentaci tahu
-struct Tah {
-    int disk;
-    char z;
-    char na;
-    vector<vector<int>> stavVezi;
-};
-
-// Funkce pro provedení tahu
-void provedTah(vector<vector<int>> &veze, Tah &tah) {
-    int from = tah.z - 'A';
-    int to = tah.na - 'A';
-
-    if (!veze[from].empty()) {
-        tah.disk = veze[from].back(); // Získáme horní disk
-        veze[from].pop_back();        // Odebereme ho z původní věže
-        veze[to].push_back(tah.disk); // Přidáme ho na cílovou věž
-    }
-
-    tah.stavVezi = veze; // Uložení aktuálního stavu věží po tahu
+// Custom equality comparer for Tah structs
+bool jsouTahyRovny(const Tah &a, const Tah &b)
+{
+    return a.disk == b.disk && a.z == b.z && a.na == b.na && a.stavVezi == b.stavVezi;
 }
 
-
-// Funkce pro řešení Hanoiských věží (bez výpisu)
-void hanoi(int n, char z, char pomocny, char cil, vector<vector<int>> &veze, vector<Tah> &tahy) {
-    if (n <= 0) return; // Pokud je počet disků 0 nebo záporný, nic neděláme
-
-    if (n == 1) {
-        Tah tah = {n, z, cil, {}}; // Inicializace tahu
-        provedTah(veze, tah);      // Provedení tahu
-        tahy.push_back(tah);       // Uložení tahu
-        return;
-    }
-
-    hanoi(n - 1, z, cil, pomocny, veze, tahy); // Přesun n-1 disků na pomocný kolík
-
-    Tah tah = {n, z, cil, {}}; // Přesun největšího disku na cílový kolík
-    provedTah(veze, tah);
-    tahy.push_back(tah);
-
-    hanoi(n - 1, pomocny, z, cil, veze, tahy); // Přesun n-1 disků na cílový kolík
-}
-
-
-// Funkce pro zobrazení stavu věží
-void zobrazVeze(const vector<vector<int>> &veze) {
-
-    int maxHeight = 0;
-    for (const auto &vez : veze) {
-        maxHeight = max(maxHeight, static_cast<int>(vez.size()));
-    }
-    
-    for (int i = maxHeight - 1; i >= 0; i--) {
-        for (const auto &vez : veze) {
-            if (i < vez.size()) {
-                cout << string(vez[i], '=') << "\t";
-            } else {
-                cout << "|\t";
-            }
-        }
-        cout << endl;
-    }
-    cout << "A\tB\tC" << endl;
-    cout << "--------------------" << endl;
-}
-
-#ifndef __TEST__
-int main() {
-    int n;
-    cout << "Zadejte počet disků: ";
-    cin >> n;
-    cin.ignore();
-    
-    if (n <= 0) {
-        cout << "Počet disků musí být kladné číslo!" << endl;
-        return 1;
-    }
-    
+TEST(HanoiTest, JedenDisk)
+{
     vector<vector<int>> veze(3);
-    for (int i = n; i > 0; i--) {
-        veze[0].push_back(i);
-    }
-    
+    veze[0].push_back(1);
     vector<Tah> tahy;
-    hanoi(n, 'A', 'B', 'C', veze, tahy);
-    
-    // Zobrazení tahů a stavů věží
-    for (const Tah &tah : tahy) {
-        cout << "Přesuň disk " << tah.disk << " z kolíku " << tah.z << " na kolík " << tah.na << endl;
-        zobrazVeze(tah.stavVezi);
+    hanoi(1, 'A', 'B', 'C', veze, tahy);
+
+    vector<Tah> ocekavaneTahy = {{1, 'A', 'C', {{}, {}, {1}}}};
+    ASSERT_EQ(tahy.size(), ocekavaneTahy.size()); // Check sizes first for better error messages
+    for (size_t i = 0; i < tahy.size(); ++i)
+    {
+        ASSERT_TRUE(jsouTahyRovny(tahy[i], ocekavaneTahy[i])) << "Tahs are not equal at index: " << i;
     }
-    
-    return 0;
 }
-#endif
+
+TEST(HanoiTest, DvaDisky)
+{
+    vector<vector<int>> veze(3);
+    veze[0].push_back(2);
+    veze[0].push_back(1);
+    vector<Tah> tahy;
+    hanoi(2, 'A', 'B', 'C', veze, tahy);
+
+    vector<Tah> ocekavaneTahy = {
+        {1, 'A', 'B', {{2}, {1}, {}}},
+        {2, 'A', 'C', {{}, {1}, {2}}},
+        {1, 'B', 'C', {{}, {}, {2, 1}}}};
+    ASSERT_EQ(tahy.size(), ocekavaneTahy.size()); // Check sizes first for better error messages
+    for (size_t i = 0; i < tahy.size(); ++i)
+    {
+        ASSERT_TRUE(jsouTahyRovny(tahy[i], ocekavaneTahy[i])) << "Tahs are not equal at index: " << i;
+    }
+}
+
+TEST(HanoiTest, TriDisky)
+{
+    vector<vector<int>> veze(3);
+    veze[0].push_back(3);
+    veze[0].push_back(2);
+    veze[0].push_back(1);
+    vector<Tah> tahy;
+    hanoi(3, 'A', 'B', 'C', veze, tahy);
+
+    vector<Tah> ocekavaneTahy = {
+        {1, 'A', 'C', {{3, 2}, {}, {1}}},
+        {2, 'A', 'B', {{3}, {2}, {1}}},
+        {1, 'C', 'B', {{3}, {2, 1}, {}}},
+        {3, 'A', 'C', {{}, {2, 1}, {3}}},
+        {1, 'B', 'A', {{1}, {2}, {3}}},
+        {2, 'B', 'C', {{1}, {}, {3, 2}}},
+        {1, 'A', 'C', {{}, {}, {3, 2, 1}}}};
+    ASSERT_EQ(tahy.size(), ocekavaneTahy.size()); // Check sizes first for better error messages
+    for (size_t i = 0; i < tahy.size(); ++i)
+    {
+        ASSERT_TRUE(jsouTahyRovny(tahy[i], ocekavaneTahy[i])) << "Tahs are not equal at index: " << i;
+    }
+}
+TEST(HanoiTest, InvalidNumberOfDisks)
+{
+    vector<vector<int>> veze(3); // Initialize towers
+    vector<Tah> tahy;            // Initialize moves
+
+    // Test with zero disks
+    ASSERT_NO_THROW({ hanoi(0, 'A', 'B', 'C', veze, tahy); }); // Should not throw
+    ASSERT_EQ(tahy.size(), 0) << "Expected zero moves for zero disks";
+
+    // Test with negative disks
+    ASSERT_NO_THROW({ hanoi(-1, 'A', 'B', 'C', veze, tahy); }); // Should not throw
+    ASSERT_EQ(tahy.size(), 0) << "Expected zero moves for negative disks";
+
+    // Test with a valid number of disks
+    hanoi(1, 'A', 'B', 'C', veze, tahy);
+    ASSERT_EQ(tahy.size(), 1);
+}
